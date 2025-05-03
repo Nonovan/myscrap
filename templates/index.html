@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        label { display: block; margin-top: 10px; }
+        input[type="text"], input[type="url"], textarea { width: 90%; max-width: 500px; padding: 8px; margin-top: 5px; }
+        input[type="date"] { padding: 8px; margin-top: 5px; }
+        button { padding: 10px 15px; margin-top: 20px; cursor: pointer; }
+        .results { margin-top: 20px; border: 1px solid #ccc; padding: 15px; background-color: #f9f9f9; white-space: pre-wrap; /* Preserve formatting */ word-wrap: break-word; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Advanced Web Scraper</h1>
+
+    <form action="/scrape" method="post">
+        <label for="websites">Website URLs (one per line):</label>
+        <textarea id="websites" name="websites" rows="3" required>{{ request.form['websites'] }}</textarea>
+
+        <label for="terms">Search Terms (comma-separated):</label>
+        <input type="text" id="terms" name="terms" value="{{ request.form['terms'] }}">
+
+        <label for="phrases">Exact Phrases (comma-separated, enclosed in quotes if needed):</label>
+        <input type="text" id="phrases" name="phrases" value="{{ request.form['phrases'] }}">
+
+        <label for="start_date">Start Date (Optional):</label>
+        <input type="date" id="start_date" name="start_date" value="{{ request.form['start_date'] }}">
+
+        <label for="end_date">End Date (Optional):</label>
+        <input type="date" id="end_date" name="end_date" value="{{ request.form['end_date'] }}">
+
+        <button type="submit">Scrape</button>
+    </form>
+
+    {% if results %}
+        <h2>Results:</h2>
+        <div class="results">
+            {% for url, data in results.items() %}
+                <h3>{{ url }}</h3>
+                {% if data.status == 'success' %}
+                    <p>Found {{ data.matches | length }} potential matches:</p>
+                    <ul>
+                        {% for match in data.matches %}
+                            <li>{{ match | truncate(300) }}</li> {# Display snippet #}
+                        {% else %}
+                            <li>No matches found for the given criteria.</li>
+                        {% endfor %}
+                    </ul>
+                {% elif data.status == 'error' %}
+                    <p class="error">Error scraping: {{ data.message }}</p>
+                {% endif %}
+                <hr>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+     {% if error %}
+        <h2>Error:</h2>
+        <div class="results error">
+           <p>{{ error }}</p>
+        </div>
+    {% endif %}
+
+</body>
+</html>
